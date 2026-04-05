@@ -1,182 +1,107 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinTrack • Личные финансы</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<meta charset="UTF-8">
+<title>Личные финансы</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <div class="logo">
-                <div class="logo-icon">F</div>
-                <div>
-                    <h1>FinTrack</h1>
-                    <p>Управление личными финансами</p>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <button onclick="clearAllData()" class="clear-btn">
-                    <i class="fa-solid fa-trash"></i>
-                    <span>Очистить данные</span>
-                </button>
-                
-                <div class="balance-card">
-                    <span class="balance-label">Баланс</span>
-                    <span id="header-balance" class="balance-value">0.00 ₽</span>
-                </div>
-            </div>
-        </header>
 
-        <div class="main-grid">
-            <!-- Sidebar: форма добавления -->
-            <aside class="sidebar">
-                <h2><i class="fa-solid fa-plus"></i> Новая транзакция</h2>
-                
-                <form id="transaction-form">
-                    <div class="form-group">
-                        <label>Сумма (₽)</label>
-                        <div class="amount-input">
-                            <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
-                            <span class="currency">₽</span>
-                        </div>
-                    </div>
+<div class="container">
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Тип</label>
-                            <select id="type" required>
-                                <option value="">Выберите тип</option>
-                                <option value="income">💰 Доход</option>
-                                <option value="expense">📉 Расход</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Категория</label>
-                            <select id="category" required>
-                                <!-- Заполняется через JS -->
-                            </select>
-                        </div>
-                    </div>
+<h1>💰 Личные финансы</h1>
 
-                    <div class="form-group">
-                        <label>Дата</label>
-                        <input type="date" id="date">
-                    </div>
+<div class="stats">
 
-                    <div class="form-group">
-                        <label>Комментарий</label>
-                        <textarea id="comment" rows="3" placeholder="Описание транзакции..."></textarea>
-                    </div>
+<div class="card income">
+<h3>Доходы</h3>
+<p id="income">0</p>
+</div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Добавить транзакцию
-                    </button>
-                </form>
-            </aside>
+<div class="card expense">
+<h3>Расходы</h3>
+<p id="expense">0</p>
+</div>
 
-            <!-- Основная часть -->
-            <div class="content">
-                <!-- Статистика -->
-                <div class="stats-grid">
-                    <div class="stat-card income">
-                        <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                        <div>
-                            <p class="stat-label">Доходы</p>
-                            <p id="stat-income" class="stat-value">0 ₽</p>
-                        </div>
-                    </div>
-                    <div class="stat-card expense">
-                        <div class="stat-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
-                        <div>
-                            <p class="stat-label">Расходы</p>
-                            <p id="stat-expense" class="stat-value">0 ₽</p>
-                        </div>
-                    </div>
-                    <div class="stat-card balance">
-                        <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
-                        <div>
-                            <p class="stat-label">Баланс</p>
-                            <p id="stat-balance" class="stat-value">0 ₽</p>
-                        </div>
-                    </div>
-                </div>
+<div class="card balance">
+<h3>Баланс</h3>
+<p id="balance">0</p>
+</div>
 
-                <!-- Фильтры -->
-                <div class="filters">
-                    <div class="filter-group">
-                        <label>Тип</label>
-                        <select id="filter-type" onchange="renderAll()">
-                            <option value="">Все типы</option>
-                            <option value="income">Доходы</option>
-                            <option value="expense">Расходы</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Категория</label>
-                        <select id="filter-category" onchange="renderAll()">
-                            <!-- Заполняется через JS -->
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>С даты</label>
-                        <input type="date" id="filter-from" onchange="renderAll()">
-                    </div>
-                    <div class="filter-group">
-                        <label>По дату</label>
-                        <input type="date" id="filter-to" onchange="renderAll()">
-                    </div>
-                    <div class="filter-actions">
-                        <button onclick="setQuickPeriod('week')" class="btn btn-secondary">Неделя</button>
-                        <button onclick="setQuickPeriod('month')" class="btn btn-secondary">Месяц</button>
-                        <button onclick="resetFilters()" class="btn btn-secondary">Сбросить</button>
-                    </div>
-                </div>
+</div>
 
-                <!-- Распределение расходов -->
-                <div class="distribution-card">
-                    <h3><i class="fa-solid fa-chart-pie"></i> Распределение расходов</h3>
-                    <div id="distribution" class="distribution-list"></div>
-                </div>
+<h2>Добавить транзакцию</h2>
 
-                <!-- Таблица транзакций -->
-                <div class="transactions-section">
-                    <div class="section-header">
-                        <h3>История операций</h3>
-                        <span id="transactions-count" class="count">0 операций</span>
-                    </div>
-                    
-                    <table class="transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Дата</th>
-                                <th>Тип</th>
-                                <th>Категория</th>
-                                <th class="text-right">Сумма</th>
-                                <th>Комментарий</th>
-                                <th class="actions"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactions-body"></tbody>
-                    </table>
-                    
-                    <div id="empty-state" class="empty-state">
-                        <i class="fa-solid fa-receipt"></i>
-                        <p>Пока нет транзакций</p>
-                        <p class="small">Добавьте первую операцию в форме слева</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<form id="transactionForm">
 
-    <!-- Уведомление -->
-    <div id="notification" class="notification"></div>
+<input type="number" id="amount" placeholder="Сумма" required>
 
-    <script src="script.js"></script>
+<select id="type">
+<option value="income">Доход</option>
+<option value="expense">Расход</option>
+</select>
+
+<select id="category">
+<option>Еда</option>
+<option>Транспорт</option>
+<option>Жильё</option>
+<option>Развлечения</option>
+<option>Здоровье</option>
+<option>Другие</option>
+</select>
+
+<input type="date" id="date">
+
+<input type="text" id="comment" placeholder="Комментарий">
+
+<button type="submit">Добавить</button>
+
+</form>
+
+<h2>Фильтры</h2>
+
+<div class="filters">
+
+<select id="filterCategory">
+<option value="all">Все категории</option>
+<option>Еда</option>
+<option>Транспорт</option>
+<option>Жильё</option>
+<option>Развлечения</option>
+<option>Здоровье</option>
+<option>Другие</option>
+</select>
+
+<input type="date" id="filterFrom">
+<input type="date" id="filterTo">
+
+<button onclick="applyFilters()">Применить</button>
+
+</div>
+
+<h2>Транзакции</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Дата</th>
+<th>Тип</th>
+<th>Категория</th>
+<th>Сумма</th>
+<th>Комментарий</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="transactionTable"></tbody>
+
+</table>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
