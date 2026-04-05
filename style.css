@@ -1,6 +1,6 @@
 body{
 font-family: Arial;
-background:#f5f6fa;
+background:#f4f6f8;
 margin:0;
 }
 
@@ -29,9 +29,17 @@ text-align:center;
 font-size:20px;
 }
 
-.income{background:#2ecc71;}
-.expense{background:#e74c3c;}
-.balance{background:#3498db;}
+.incomeCard{
+background:#2ecc71;
+}
+
+.expenseCard{
+background:#e74c3c;
+}
+
+.balanceCard{
+background:#3498db;
+}
 
 form{
 display:flex;
@@ -57,6 +65,17 @@ button:hover{
 background:#2980b9;
 }
 
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:15px;
+}
+
+.search{
+width:100%;
+margin-bottom:10px;
+}
+
 table{
 width:100%;
 border-collapse:collapse;
@@ -73,6 +92,16 @@ tr:hover{
 background:#f1f1f1;
 }
 
+.income{
+color:#2ecc71;
+font-weight:bold;
+}
+
+.expense{
+color:#e74c3c;
+font-weight:bold;
+}
+
 .delete{
 background:#e74c3c;
 color:white;
@@ -82,8 +111,8 @@ border-radius:5px;
 cursor:pointer;
 }
 
-.filters{
-display:flex;
-gap:10px;
-margin-bottom:20px;
+pre{
+background:white;
+padding:15px;
+border-radius:5px;
 }
