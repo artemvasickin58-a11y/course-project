@@ -266,7 +266,7 @@ let expense = 0
 
 list.forEach(transaction => {
 
-if(transaction.type === "доходы"){
+if(transaction.type === "income"){
 income += transaction.amount
 }
 else{
@@ -294,7 +294,7 @@ let categories = {}
 
 list.forEach(transaction => {
 
-if(transaction.type === "расходы"){
+if(transaction.type === "expense"){
 
 if(!categories[transaction.category]){
 categories[transaction.category] = 0
