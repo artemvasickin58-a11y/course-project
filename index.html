@@ -2,39 +2,34 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Учёт личных финансов</title>
+<title>Финансовый калькулятор</title>
 <link rel="stylesheet" href="style.css">
-<script defer src="./index.js"></script>
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>💰 Калькулятор личных финансов</h1>
-
-<!-- СТАТИСТИКА -->
+<h1>Калькулятор личных финансов</h1>
 
 <div class="stats">
 
-<div class="card incomeCard">
+<div class="card income">
 <h3>Доходы</h3>
 <p id="income">0</p>
 </div>
 
-<div class="card expenseCard">
+<div class="card expense">
 <h3>Расходы</h3>
 <p id="expense">0</p>
 </div>
 
-<div class="card balanceCard">
+<div class="card balance">
 <h3>Баланс</h3>
 <p id="balance">0</p>
 </div>
 
 </div>
-
-<!-- ДОБАВЛЕНИЕ ТРАНЗАКЦИИ -->
 
 <h2>Добавить транзакцию</h2>
 
@@ -43,8 +38,8 @@
 <input type="number" id="amount" placeholder="Сумма" required>
 
 <select id="type">
-<option value="Доходы">Доход</option>
-<option value="Расходы">Расход</option>
+<option value="income">Доход</option>
+<option value="expense">Расход</option>
 </select>
 
 <select id="category">
@@ -64,8 +59,6 @@
 
 </form>
 
-<!-- ФИЛЬТРЫ -->
-
 <h2>Фильтры</h2>
 
 <div class="filters">
@@ -84,22 +77,11 @@
 <input type="date" id="filterTo">
 
 <button onclick="applyFilters()">Фильтр</button>
-
 <button onclick="exportCSV()">Экспорт CSV</button>
 
+<input type="text" id="search" placeholder="Поиск по комментарию" oninput="searchComment()">
+
 </div>
-
-<!-- ПОИСК -->
-
-<input
-type="text"
-id="search"
-placeholder="Поиск по комментарию"
-oninput="searchComment()"
-class="search"
-/>
-
-<!-- ТАБЛИЦА -->
 
 <h2>Транзакции</h2>
 
@@ -119,8 +101,6 @@ class="search"
 <tbody id="transactionTable"></tbody>
 
 </table>
-
-<!-- ТЕКСТОВЫЙ ГРАФИК -->
 
 <h2>Распределение расходов</h2>
 

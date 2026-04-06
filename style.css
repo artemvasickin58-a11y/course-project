@@ -1,24 +1,17 @@
 body{
-font-family: "Segoe UI", Roboto, Arial;
-background: linear-gradient(135deg,#eef2f7,#dfe9f3);
+font-family: Arial;
+background:#f4f6f9;
 margin:0;
 }
 
 .container{
-max-width:1000px;
+width:900px;
 margin:auto;
-padding:30px;
+padding:20px;
 }
 
 h1{
 text-align:center;
-margin-bottom:30px;
-color:#2c3e50;
-}
-
-h2{
-margin-top:30px;
-color:#34495e;
 }
 
 .stats{
@@ -29,80 +22,52 @@ margin-bottom:30px;
 
 .card{
 flex:1;
-padding:25px;
-border-radius:15px;
+padding:20px;
+border-radius:10px;
 color:white;
 text-align:center;
-font-size:22px;
-box-shadow:0 10px 20px rgba(0,0,0,0.1);
-transition:0.3s;
 }
 
-.card:hover{
-transform:translateY(-4px);
+.income{
+background:#2ecc71;
 }
 
-.incomeCard{
-background:linear-gradient(135deg,#27ae60,#2ecc71);
+.expense{
+background:#e74c3c;
 }
 
-.expenseCard{
-background:linear-gradient(135deg,#c0392b,#e74c3c);
-}
-
-.balanceCard{
-background:linear-gradient(135deg,#2980b9,#3498db);
+.balance{
+background:#3498db;
 }
 
 form{
 display:flex;
+gap:10px;
 flex-wrap:wrap;
-gap:12px;
-margin-bottom:20px;
-background:white;
-padding:20px;
-border-radius:12px;
-box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-bottom:30px;
 }
 
-input,select{
-padding:12px;
-border-radius:8px;
-border:1px solid #dcdcdc;
-font-size:14px;
-transition:0.2s;
-}
-
-input:focus,select:focus{
-outline:none;
-border-color:#3498db;
-box-shadow:0 0 0 2px rgba(52,152,219,0.15);
+input,select,button{
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
-padding:12px 18px;
-border-radius:8px;
-border:none;
-background:linear-gradient(135deg,#3498db,#2980b9);
+background:#3498db;
 color:white;
-font-weight:500;
+border:none;
 cursor:pointer;
-transition:0.2s;
 }
 
 button:hover{
-transform:scale(1.03);
-box-shadow:0 5px 10px rgba(0,0,0,0.15);
+background:#2980b9;
 }
 
 .filters{
 display:flex;
 gap:10px;
-margin-bottom:20px;
-}
-
-.search{
-width:100%;
+flex-wrap:wrap;
 margin-bottom:20px;
 }
 
@@ -110,51 +75,25 @@ table{
 width:100%;
 border-collapse:collapse;
 background:white;
-border-radius:12px;
-overflow:hidden;
-box-shadow:0 5px 15px rgba(0,0,0,0.08);
 }
 
-th{
-background:#f4f6f8;
-padding:14px;
-font-weight:600;
-}
-
-td{
-padding:12px;
-border-bottom:1px solid #eee;
-}
-
-tr:hover{
-background:#f9fbfd;
-}
-
-.income{
-color:#27ae60;
-font-weight:bold;
-}
-
-.expense{
-color:#e74c3c;
-font-weight:bold;
+th,td{
+padding:10px;
+border-bottom:1px solid #ddd;
+text-align:center;
 }
 
 .delete{
 background:#e74c3c;
-padding:6px 12px;
-border-radius:6px;
-font-size:13px;
-}
-
-.delete:hover{
-background:#c0392b;
+color:white;
+border:none;
+padding:5px 10px;
+border-radius:5px;
+cursor:pointer;
 }
 
 pre{
 background:white;
-padding:20px;
-border-radius:12px;
-box-shadow:0 5px 15px rgba(0,0,0,0.08);
-font-family:monospace;
+padding:15px;
+border-radius:10px;
 }
