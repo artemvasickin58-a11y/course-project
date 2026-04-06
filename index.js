@@ -1,250 +1,256 @@
-let transactions = JSON.parse(localStorage.getItem("transactions")) || []
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let currentSort = { column: 'date', direction: 'desc' }; // по умолчанию — новейшие сверху
 
-const form = document.getElementById("transactionForm")
-const table = document.getElementById("transactionTable")
+const form = document.getElementById("transactionForm");
+const tableBody = document.getElementById("transactionTable");
 
-const incomeElement = document.getElementById("income")
-const expenseElement = document.getElementById("expense")
-const balanceElement = document.getElementById("balance")
+const incomeElement = document.getElementById("income");
+const expenseElement = document.getElementById("expense");
+const balanceElement = document.getElementById("balance");
+const chartElement = document.getElementById("chart");
 
-const chartElement = document.getElementById("chart")
+init();
 
-init()
-
-function init(){
-
-setDefaultDate()
-
-renderTransactions(transactions)
-
-updateStatistics(transactions)
-
+function init() {
+    setDefaultDate();
+    renderTransactions(transactions);
+    updateStatistics(transactions);
 }
 
-function setDefaultDate(){
-
-document.getElementById("date").value =
-new Date().toISOString().slice(0,10)
-
+function setDefaultDate() {
+    document.getElementById("date").value = new Date().toISOString().slice(0, 10);
 }
 
-function saveTransactions(){
-
-localStorage.setItem("transactions", JSON.stringify(transactions))
-
+function saveTransactions() {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
-form.addEventListener("submit",function(e){
+// ===================== Добавление транзакции =====================
+form.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-e.preventDefault()
+    const amount = parseFloat(document.getElementById("amount").value);
+    const type = document.getElementById("type").value;
+    const category = document.getElementById("category").value;
+    const date = document.getElementById("date").value;
+    const comment = document.getElementById("comment").value.trim() || "—";
 
-const amount = parseFloat(document.getElementById("amount").value)
-const type = document.getElementById("type").value
-const category = document.getElementById("category").value
-const date = document.getElementById("date").value
-const comment = document.getElementById("comment").value
+    if (isNaN(amount) || amount <= 0) {
+        alert("Введите корректную сумму");
+        return;
+    }
 
-if(isNaN(amount) || amount<=0){
-alert("Введите корректную сумму")
-return
+    const transaction = {
+        id: Date.now(),
+        amount: Math.abs(amount),
+        type,
+        category,
+        date,
+        comment
+    };
+
+    transactions.push(transaction);
+    saveTransactions();
+    renderTransactions(transactions);
+    updateStatistics(transactions);
+
+    form.reset();
+    setDefaultDate();
+});
+
+// ===================== СОРТИРОВКА =====================
+function sortTransactions(list) {
+    return [...list].sort((a, b) => {
+        if (currentSort.column === 'date') {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return currentSort.direction === 'desc' ? dateB - dateA : dateA - dateB;
+        }
+        return 0;
+    });
 }
 
-const transaction={
-id:Date.now(),
-amount:Math.abs(amount),
-type,
-category,
-date,
-comment
+function toggleSort(column) {
+    if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'desc' ? 'asc' : 'desc';
+    } else {
+        currentSort.column = column;
+        currentSort.direction = 'desc';
+    }
+    renderTransactions(transactions);
 }
 
-transactions.push(transaction)
+// ===================== РЕНДЕР ТАБЛИЦЫ =====================
+function renderTransactions(list) {
+    tableBody.innerHTML = "";
 
-saveTransactions()
+    const sortedList = sortTransactions(list);
 
-renderTransactions(transactions)
+    sortedList.forEach(t => {
+        const row = document.createElement("tr");
 
-updateStatistics(transactions)
+        row.innerHTML = `
+            <td data-label="Дата">${t.date}</td>
+            <td data-label="Тип">${t.type === "income" ? "Доход" : "Расход"}</td>
+            <td data-label="Категория">${t.category}</td>
+            <td data-label="Сумма" class="${t.type === "income" ? "income-text" : "expense-text"}">
+                ${formatMoney(t.amount, t.type)}
+            </td>
+            <td data-label="Комментарий">${t.comment}</td>
+            <td>
+                <button class="delete" onclick="deleteTransaction(${t.id})">✕</button>
+            </td>
+        `;
 
-form.reset()
-
-setDefaultDate()
-
-})
-
-function renderTransactions(list){
-
-table.innerHTML=""
-
-list.sort((a,b)=> new Date(b.date)-new Date(a.date))
-
-list.forEach(t=>{
-
-const row=document.createElement("tr")
-
-row.innerHTML=`
-<td>${t.date}</td>
-<td>${t.type==="income"?"Доход":"Расход"}</td>
-<td>${t.category}</td>
-<td class="${t.type}">
-${formatCurrency(t.amount,t.type)}
-</td>
-<td>${t.comment}</td>
-<td>
-<button class="delete" onclick="deleteTransaction(${t.id})">
-X
-</button>
-</td>
-`
-
-table.appendChild(row)
-
-})
-
+        tableBody.appendChild(row);
+    });
 }
 
-function formatCurrency(amount,type){
-
-const formatted=amount.toLocaleString("ru-RU",{
-minimumFractionDigits:2
-})
-
-return type==="income"
-?`+${formatted}`
-:`-${formatted}`
-
+function formatMoney(amount, type) {
+    const formatted = amount.toLocaleString("ru-RU");
+    return type === "income" ? `+${formatted} ₽` : `-${formatted} ₽`;
 }
 
-function deleteTransaction(id){
-
-transactions=transactions.filter(t=>t.id!==id)
-
-saveTransactions()
-
-renderTransactions(transactions)
-
-updateStatistics(transactions)
-
+function deleteTransaction(id) {
+    if (confirm("Удалить эту транзакцию?")) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveTransactions();
+        renderTransactions(transactions);
+        updateStatistics(transactions);
+    }
 }
 
-function applyFilters(){
+// ===================== ФИЛЬТРЫ =====================
 
-const category=document.getElementById("filterCategory").value
-const from=document.getElementById("filterFrom").value
-const to=document.getElementById("filterTo").value
+// Применить фильтры (тип, категория, период)
+function applyFilters() {
+    const type = document.getElementById("filterType").value;
+    const category = document.getElementById("filterCategory").value;
+    const from = document.getElementById("filterFrom").value;
+    const to = document.getElementById("filterTo").value;
 
-const filtered=transactions.filter(t=>{
+    let filtered = transactions.filter(t => {
+        if (type !== "all" && t.type !== type) return false;
+        if (category !== "all" && t.category !== category) return false;
+        if (from && t.date < from) return false;
+        if (to && t.date > to) return false;
+        return true;
+    });
 
-if(category!=="all" && t.category!==category)
-return false
-
-if(from && new Date(t.date)<new Date(from))
-return false
-
-if(to && new Date(t.date)>new Date(to))
-return false
-
-return true
-
-})
-
-renderTransactions(filtered)
-
-updateStatistics(filtered)
-
+    renderTransactions(filtered);
+    updateStatistics(filtered);
 }
 
-function searchComment(){
+// ========== ИСПРАВЛЕННЫЕ ФУНКЦИИ НЕДЕЛЯ И МЕСЯЦ ==========
+function filterWeek() {
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
 
-const text=document.getElementById("search").value.toLowerCase()
+    const weekAgo = new Date(now);
+    weekAgo.setDate(now.getDate() - 7);
+    weekAgo.setHours(0, 0, 0, 0);
 
-const filtered=transactions.filter(t=>
-t.comment.toLowerCase().includes(text)
-)
+    const filtered = transactions.filter(t => {
+        const d = new Date(t.date);
+        return d >= weekAgo && d <= now;
+    });
 
-renderTransactions(filtered)
-
-updateStatistics(filtered)
-
+    renderTransactions(filtered);
+    updateStatistics(filtered);
 }
 
-function updateStatistics(list){
+function filterMonth() {
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
 
-let income=0
-let expense=0
+    const monthAgo = new Date(now);
+    monthAgo.setDate(now.getDate() - 30);   // последние 30 дней
+    monthAgo.setHours(0, 0, 0, 0);
 
-list.forEach(t=>{
+    const filtered = transactions.filter(t => {
+        const d = new Date(t.date);
+        return d >= monthAgo && d <= now;
+    });
 
-if(t.type==="income")
-income+=t.amount
-else
-expense+=t.amount
-
-})
-
-incomeElement.textContent=income.toFixed(2)
-expenseElement.textContent=expense.toFixed(2)
-
-const balance=income-expense
-
-balanceElement.textContent=balance.toFixed(2)
-
-drawChart(list)
-
+    renderTransactions(filtered);
+    updateStatistics(filtered);
 }
 
-function drawChart(list){
+// Сброс всех фильтров
+function resetFilters() {
+    document.getElementById("filterType").value = "all";
+    document.getElementById("filterCategory").value = "all";
+    document.getElementById("filterFrom").value = "";
+    document.getElementById("filterTo").value = "";
+    document.getElementById("search").value = "";
 
-let categories={}
-
-list.forEach(t=>{
-
-if(t.type==="expense"){
-
-if(!categories[t.category])
-categories[t.category]=0
-
-categories[t.category]+=t.amount
-
+    renderTransactions(transactions);
+    updateStatistics(transactions);
 }
 
-})
+// Поиск по комментарию
+function searchComment() {
+    const text = document.getElementById("search").value.toLowerCase().trim();
 
-const total=Object.values(categories).reduce((a,b)=>a+b,0)
+    const filtered = transactions.filter(t =>
+        t.comment.toLowerCase().includes(text)
+    );
 
-let text=""
-
-for(let cat in categories){
-
-const percent=((categories[cat]/total)*100).toFixed(1)
-
-const bar="#".repeat(Math.round(percent/2))
-
-text+=`${cat} ${percent}% ${bar}\n`
-
+    renderTransactions(filtered);
+    updateStatistics(filtered);
 }
 
-chartElement.textContent=text
+// ===================== СТАТИСТИКА И ГРАФИК =====================
+function updateStatistics(list) {
+    let income = 0;
+    let expense = 0;
 
+    list.forEach(t => {
+        if (t.type === "income") income += t.amount;
+        else expense += t.amount;
+    });
+
+    incomeElement.textContent = income.toLocaleString("ru-RU");
+    expenseElement.textContent = expense.toLocaleString("ru-RU");
+    balanceElement.textContent = (income - expense).toLocaleString("ru-RU");
+
+    drawChart(list);
 }
 
-function exportCSV(){
+function drawChart(list) {
+    let categories = {};
 
-let csv="Дата,Тип,Категория,Сумма,Комментарий\n"
+    list.forEach(t => {
+        if (t.type === "expense") {
+            categories[t.category] = (categories[t.category] || 0) + t.amount;
+        }
+    });
 
-transactions.forEach(t=>{
-csv+=`${t.date},${t.type},${t.category},${t.amount},${t.comment}\n`
-})
+    const total = Object.values(categories).reduce((a, b) => a + b, 0);
+    let text = total ? "" : "Нет расходов для отображения\n";
 
-const blob=new Blob([csv],{type:"text/csv"})
+    for (let cat in categories) {
+        const value = categories[cat];
+        const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+        const bar = "█".repeat(Math.round(percent / 4)); // более красивые блоки
+        text += `${cat}: ${value.toLocaleString("ru-RU")} ₽ (${percent}%)\n${bar}\n\n`;
+    }
 
-const url=URL.createObjectURL(blob)
+    chartElement.textContent = text;
+}
 
-const link=document.createElement("a")
+// ===================== ЭКСПОРТ =====================
+function exportCSV() {
+    let csv = "Дата,Тип,Категория,Сумма,Комментарий\n";
 
-link.href=url
-link.download="finance.csv"
+    transactions.forEach(t => {
+        csv += `${t.date},${t.type},${t.category},${t.amount},"${t.comment.replace(/"/g, '""')}"\n`;
+    });
 
-link.click()
-
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `финансы_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
 }

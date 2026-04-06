@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Финансовый калькулятор</title>
+<title>Калькулятор личных финансов</title>
 <link rel="stylesheet" href="style.css">
 <script defer src="./index.js"></script>
 </head>
@@ -64,6 +64,12 @@
 
 <div class="filters">
 
+<select id="filterType">
+<option value="all">Все типы</option>
+<option value="income">Доходы</option>
+<option value="expense">Расходы</option>
+</select>
+
 <select id="filterCategory">
 <option value="all">Все категории</option>
 <option>Еда</option>
@@ -77,10 +83,14 @@
 <input type="date" id="filterFrom">
 <input type="date" id="filterTo">
 
-<button onclick="applyFilters()">Фильтр</button>
-<button onclick="exportCSV()">Экспорт CSV</button>
+<button onclick="applyFilters()">Применить</button>
+<button onclick="filterWeek()">Неделя</button>
+<button onclick="filterMonth()">Месяц</button>
+<button onclick="resetFilters()">Сброс</button>
 
-<input type="text" id="search" placeholder="Поиск по комментарию" oninput="searchComment()">
+<input type="text" id="search" placeholder="Поиск комментария" oninput="searchComment()">
+
+<button onclick="exportCSV()">Экспорт CSV</button>
 
 </div>
 
@@ -90,7 +100,7 @@
 
 <thead>
 <tr>
-<th>Дата</th>
+<th onclick="toggleSort('date')">Дата <span class="sort-icon">↕</span></th>
 <th>Тип</th>
 <th>Категория</th>
 <th>Сумма</th>
