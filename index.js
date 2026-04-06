@@ -1,22 +1,4 @@
-// ===============================
-// ХРАНЕНИЕ ДАННЫХ
-// ===============================
-
-let transactions = loadTransactions()
-
-function loadTransactions() {
-    const data = localStorage.getItem("transactions")
-    return data ? JSON.parse(data) : []
-}
-
-function saveTransactions() {
-    localStorage.setItem("transactions", JSON.stringify(transactions))
-}
-
-
-// ===============================
-// ЭЛЕМЕНТЫ ИНТЕРФЕЙСА
-// ===============================
+let transactions = JSON.parse(localStorage.getItem("transactions")) || []
 
 const form = document.getElementById("transactionForm")
 const table = document.getElementById("transactionTable")
@@ -27,119 +9,86 @@ const balanceElement = document.getElementById("balance")
 
 const chartElement = document.getElementById("chart")
 
-
-// ===============================
-// ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
-// ===============================
-
 init()
 
-function init() {
-
+function init(){
     setDefaultDate()
     renderTransactions(transactions)
     updateStatistics(transactions)
-
 }
 
-
-// ===============================
-// УСТАНОВКА ТЕКУЩЕЙ ДАТЫ
-// ===============================
-
-function setDefaultDate() {
-
-    const dateInput = document.getElementById("date")
-
-    if (dateInput) {
-        dateInput.value = new Date().toISOString().slice(0, 10)
-    }
-
+function setDefaultDate(){
+    document.getElementById("date").value =
+    new Date().toISOString().slice(0,10)
 }
 
+function saveTransactions(){
+    localStorage.setItem("transactions", JSON.stringify(transactions))
+}
 
-// ===============================
-// ДОБАВЛЕНИЕ ТРАНЗАКЦИИ
-// ===============================
+form.addEventListener("submit", function(e){
 
-form.addEventListener("submit", addTransaction)
+    e.preventDefault()
 
-function addTransaction(event) {
+    const amountInput = document.getElementById("amount").value
+    const amount = Math.abs(parseFloat(amountInput))   // ВСЕГДА положительное
 
-    event.preventDefault()
-
-    const amount = parseFloat(document.getElementById("amount").value)
     const type = document.getElementById("type").value
     const category = document.getElementById("category").value
     const date = document.getElementById("date").value
     const comment = document.getElementById("comment").value
 
-
-    if (!validateAmount(amount)) return
-
-
-    const newTransaction = {
-        id: Date.now(),
-        amount,
-        type,
-        category,
-        date,
-        comment
+    if(isNaN(amount) || amount <= 0){
+        alert("Введите корректную сумму")
+        return
     }
 
-    transactions.push(newTransaction)
+    const transaction = {
+        id: Date.now(),
+        amount: amount,
+        type: type,
+        category: category,
+        date: date,
+        comment: comment
+    }
+
+    transactions.push(transaction)
 
     saveTransactions()
 
     renderTransactions(transactions)
-
     updateStatistics(transactions)
 
     form.reset()
-
     setDefaultDate()
-}
 
+})
 
-// ===============================
-// ВАЛИДАЦИЯ ВВОДА
-// ===============================
-
-function validateAmount(amount) {
-
-    if (isNaN(amount) || amount <= 0) {
-        alert("Ошибка: сумма должна быть положительным числом")
-        return false
-    }
-
-    return true
-}
-
-
-// ===============================
-// ОТОБРАЖЕНИЕ ТРАНЗАКЦИЙ
-// ===============================
-
-function renderTransactions(list) {
+function renderTransactions(list){
 
     table.innerHTML = ""
 
-    const sortedList = [...list].sort((a, b) => new Date(b.date) - new Date(a.date))
+    list.sort((a,b)=> new Date(b.date)-new Date(a.date))
 
-    sortedList.forEach(transaction => {
+    list.forEach(t=>{
 
         const row = document.createElement("tr")
 
+        const sign = t.type === "expense" ? "-" : "+"
+
         row.innerHTML = `
-        <td>${transaction.date}</td>
-        <td>${transaction.type}</td>
-        <td>${transaction.category}</td>
-        <td class="${transaction.type}">${transaction.amount}</td>
-        <td>${transaction.comment}</td>
+        <td>${t.date}</td>
+        <td>${t.type === "income" ? "Доход" : "Расход"}</td>
+        <td>${t.category}</td>
+        <td class="${t.type}">
+            ${sign}${t.amount}
+        </td>
+        <td>${t.comment || ""}</td>
         <td>
-            <button class="delete" onclick="deleteTransaction(${transaction.id})">
-            X
-            </button>
+        <button class="delete"
+        onclick="deleteTransaction(${t.id})">
+        ✖
+        </button>
         </td>
         `
 
@@ -149,162 +98,134 @@ function renderTransactions(list) {
 
 }
 
+function deleteTransaction(id){
 
-// ===============================
-// УДАЛЕНИЕ ТРАНЗАКЦИИ
-// ===============================
-
-function deleteTransaction(id) {
-
-    transactions = transactions.filter(transaction => transaction.id !== id)
+    transactions = transactions.filter(t => t.id !== id)
 
     saveTransactions()
 
     renderTransactions(transactions)
-
     updateStatistics(transactions)
 
 }
 
-
-// ===============================
-// ФИЛЬТРАЦИЯ
-// ===============================
-
-function applyFilters() {
+function applyFilters(){
 
     const category = document.getElementById("filterCategory").value
-    const dateFrom = document.getElementById("filterFrom").value
-    const dateTo = document.getElementById("filterTo").value
+    const from = document.getElementById("filterFrom").value
+    const to = document.getElementById("filterTo").value
 
-    const filteredTransactions = transactions.filter(transaction => {
+    const filtered = transactions.filter(t=>{
 
-        if (category !== "all" && transaction.category !== category) return false
+        if(category !== "all" && t.category !== category)
+            return false
 
-        if (dateFrom && new Date(transaction.date) < new Date(dateFrom)) return false
+        if(from && new Date(t.date) < new Date(from))
+            return false
 
-        if (dateTo && new Date(transaction.date) > new Date(dateTo)) return false
+        if(to && new Date(t.date) > new Date(to))
+            return false
 
         return true
-
     })
 
-    renderTransactions(filteredTransactions)
-
-    updateStatistics(filteredTransactions)
-
-}
-
-
-// ===============================
-// ПОИСК ПО КОММЕНТАРИЮ
-// ===============================
-
-function searchComment() {
-
-    const searchText = document
-        .getElementById("search")
-        .value
-        .toLowerCase()
-
-    const filtered = transactions.filter(transaction =>
-        transaction.comment.toLowerCase().includes(searchText)
-    )
-
     renderTransactions(filtered)
-
     updateStatistics(filtered)
 
 }
 
+function searchComment(){
 
-// ===============================
-// СТАТИСТИКА
-// ===============================
+    const text = document.getElementById("search").value.toLowerCase()
 
-function updateStatistics(list) {
+    const filtered = transactions.filter(t =>
+        (t.comment || "").toLowerCase().includes(text)
+    )
+
+    renderTransactions(filtered)
+    updateStatistics(filtered)
+
+}
+
+function updateStatistics(list){
 
     let income = 0
     let expense = 0
 
-    list.forEach(transaction => {
+    list.forEach(t=>{
 
-        if (transaction.type === "income") {
-            income += transaction.amount
-        } else {
-            expense += transaction.amount
+        if(t.type === "income"){
+            income += t.amount
+        }else{
+            expense += t.amount
         }
 
     })
 
-    incomeElement.textContent = income
-    expenseElement.textContent = expense
-    balanceElement.textContent = income - expense
+    incomeElement.textContent = income.toFixed(2)
+    expenseElement.textContent = expense.toFixed(2)
+    balanceElement.textContent = (income - expense).toFixed(2)
 
     drawChart(list)
 
 }
 
+function drawChart(list){
 
-// ===============================
-// ТЕКСТОВЫЙ ГРАФИК
-// ===============================
+    let categories = {}
 
-function drawChart(list) {
+    list.forEach(t=>{
 
-    const categories = {}
+        if(t.type === "expense"){
 
-    list.forEach(transaction => {
+            if(!categories[t.category])
+                categories[t.category] = 0
 
-        if (transaction.type === "expense") {
-
-            if (!categories[transaction.category]) {
-                categories[transaction.category] = 0
-            }
-
-            categories[transaction.category] += transaction.amount
+            categories[t.category] += t.amount
         }
 
     })
 
-    const total = Object.values(categories).reduce((a, b) => a + b, 0)
+    const total = Object.values(categories)
+    .reduce((a,b)=>a+b,0)
 
-    let chartText = ""
+    let text = ""
 
-    for (let category in categories) {
+    for(let cat in categories){
 
-        const percent = ((categories[category] / total) * 100).toFixed(1)
+        const percent =
+        ((categories[cat]/total)*100).toFixed(1)
 
-        const bar = "#".repeat(Math.round(percent / 2))
+        const bar =
+        "#".repeat(Math.round(percent/2))
 
-        chartText += `${category} ${percent}% ${bar}\n`
+        text += `${cat} ${percent}% ${bar}\n`
 
     }
 
-    chartElement.textContent = chartText
+    chartElement.textContent = text
 
 }
 
+function exportCSV(){
 
-// ===============================
-// ЭКСПОРТ CSV
-// ===============================
+    let csv =
+    "Дата,Тип,Категория,Сумма,Комментарий\n"
 
-function exportCSV() {
+    transactions.forEach(t=>{
 
-    let csv = "Дата,Тип,Категория,Сумма,Комментарий\n"
-
-    transactions.forEach(transaction => {
-
-        csv += `${transaction.date},${transaction.type},${transaction.category},${transaction.amount},${transaction.comment}\n`
+        csv += `${t.date},${t.type},${t.category},${t.amount},${t.comment}\n`
 
     })
 
-    const blob = new Blob([csv], { type: "text/csv" })
+    const blob =
+    new Blob([csv], {type:"text/csv"})
 
-    const url = URL.createObjectURL(blob)
+    const url =
+    URL.createObjectURL(blob)
 
-    const link = document.createElement("a")
+    const link =
+    document.createElement("a")
 
     link.href = url
     link.download = "finance.csv"
