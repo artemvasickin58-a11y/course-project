@@ -26,30 +26,52 @@ function saveTransactions(){
     localStorage.setItem("transactions", JSON.stringify(transactions))
 }
 
-form.addEventListener("submit", function(e){
+function validateAmount(amount){
+
+    if(isNaN(amount)){
+        alert("Ошибка: сумма должна быть числом")
+        return false
+    }
+
+    if(amount <= 0){
+        alert("Ошибка: сумма должна быть больше 0")
+        return false
+    }
+
+    return true
+}
+
+function formatCurrency(amount,type){
+
+    const formatted = amount.toLocaleString("ru-RU",{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    })
+
+    return type === "income"
+        ? `+${formatted} ₽`
+        : `- ${formatted} ₽`
+}
+
+form.addEventListener("submit",function(e){
 
     e.preventDefault()
 
-    const amountInput = document.getElementById("amount").value
-    const amount = Math.abs(parseFloat(amountInput))   // ВСЕГДА положительное
-
+    const amount = parseFloat(document.getElementById("amount").value)
     const type = document.getElementById("type").value
     const category = document.getElementById("category").value
     const date = document.getElementById("date").value
     const comment = document.getElementById("comment").value
 
-    if(isNaN(amount) || amount <= 0){
-        alert("Введите корректную сумму")
-        return
-    }
+    if(!validateAmount(amount)) return
 
     const transaction = {
         id: Date.now(),
-        amount: amount,
-        type: type,
-        category: category,
-        date: date,
-        comment: comment
+        amount: Math.abs(amount),
+        type,
+        category,
+        date,
+        comment
     }
 
     transactions.push(transaction)
@@ -57,9 +79,11 @@ form.addEventListener("submit", function(e){
     saveTransactions()
 
     renderTransactions(transactions)
+
     updateStatistics(transactions)
 
     form.reset()
+
     setDefaultDate()
 
 })
@@ -74,19 +98,16 @@ function renderTransactions(list){
 
         const row = document.createElement("tr")
 
-        const sign = t.type === "expense" ? "-" : "+"
-
         row.innerHTML = `
         <td>${t.date}</td>
         <td>${t.type === "income" ? "Доход" : "Расход"}</td>
         <td>${t.category}</td>
         <td class="${t.type}">
-            ${sign}${t.amount}
+        ${formatCurrency(t.amount,t.type)}
         </td>
-        <td>${t.comment || ""}</td>
+        <td>${t.comment}</td>
         <td>
-        <button class="delete"
-        onclick="deleteTransaction(${t.id})">
+        <button class="delete" onclick="deleteTransaction(${t.id})">
         ✖
         </button>
         </td>
@@ -105,6 +126,7 @@ function deleteTransaction(id){
     saveTransactions()
 
     renderTransactions(transactions)
+
     updateStatistics(transactions)
 
 }
@@ -118,31 +140,37 @@ function applyFilters(){
     const filtered = transactions.filter(t=>{
 
         if(category !== "all" && t.category !== category)
-            return false
+        return false
 
         if(from && new Date(t.date) < new Date(from))
-            return false
+        return false
 
         if(to && new Date(t.date) > new Date(to))
-            return false
+        return false
 
         return true
+
     })
 
     renderTransactions(filtered)
+
     updateStatistics(filtered)
 
 }
 
 function searchComment(){
 
-    const text = document.getElementById("search").value.toLowerCase()
+    const text = document
+    .getElementById("search")
+    .value
+    .toLowerCase()
 
     const filtered = transactions.filter(t =>
-        (t.comment || "").toLowerCase().includes(text)
+        t.comment.toLowerCase().includes(text)
     )
 
     renderTransactions(filtered)
+
     updateStatistics(filtered)
 
 }
@@ -162,9 +190,22 @@ function updateStatistics(list){
 
     })
 
-    incomeElement.textContent = income.toFixed(2)
-    expenseElement.textContent = expense.toFixed(2)
-    balanceElement.textContent = (income - expense).toFixed(2)
+    incomeElement.textContent =
+    income.toLocaleString("ru-RU",{minimumFractionDigits:2})
+
+    expenseElement.textContent =
+    expense.toLocaleString("ru-RU",{minimumFractionDigits:2})
+
+    const balance = income - expense
+
+    balanceElement.textContent =
+    balance.toLocaleString("ru-RU",{minimumFractionDigits:2})
+
+    if(balance < 0){
+        balanceElement.style.color = "#e74c3c"
+    }else{
+        balanceElement.style.color = "#2ecc71"
+    }
 
     drawChart(list)
 
@@ -179,14 +220,16 @@ function drawChart(list){
         if(t.type === "expense"){
 
             if(!categories[t.category])
-                categories[t.category] = 0
+            categories[t.category] = 0
 
             categories[t.category] += t.amount
+
         }
 
     })
 
-    const total = Object.values(categories)
+    const total =
+    Object.values(categories)
     .reduce((a,b)=>a+b,0)
 
     let text = ""
@@ -209,23 +252,20 @@ function drawChart(list){
 
 function exportCSV(){
 
-    let csv =
-    "Дата,Тип,Категория,Сумма,Комментарий\n"
+    let csv = "Дата,Тип,Категория,Сумма,Комментарий\n"
 
     transactions.forEach(t=>{
 
-        csv += `${t.date},${t.type},${t.category},${t.amount},${t.comment}\n`
+        csv +=
+        `${t.date},${t.type},${t.category},${t.amount},${t.comment}\n`
 
     })
 
-    const blob =
-    new Blob([csv], {type:"text/csv"})
+    const blob = new Blob([csv],{type:"text/csv"})
 
-    const url =
-    URL.createObjectURL(blob)
+    const url = URL.createObjectURL(blob)
 
-    const link =
-    document.createElement("a")
+    const link = document.createElement("a")
 
     link.href = url
     link.download = "finance.csv"
