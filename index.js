@@ -1,4 +1,22 @@
-let transactions = JSON.parse(localStorage.getItem("transactions")) || []
+// ===============================
+// ХРАНЕНИЕ ДАННЫХ
+// ===============================
+
+let transactions = loadTransactions()
+
+function loadTransactions() {
+    const data = localStorage.getItem("transactions")
+    return data ? JSON.parse(data) : []
+}
+
+function saveTransactions() {
+    localStorage.setItem("transactions", JSON.stringify(transactions))
+}
+
+
+// ===============================
+// ЭЛЕМЕНТЫ ИНТЕРФЕЙСА
+// ===============================
 
 const form = document.getElementById("transactionForm")
 const table = document.getElementById("transactionTable")
@@ -9,223 +27,288 @@ const balanceElement = document.getElementById("balance")
 
 const chartElement = document.getElementById("chart")
 
+
+// ===============================
+// ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+// ===============================
+
 init()
 
-function init(){
+function init() {
 
-setDefaultDate()
-renderTransactions(transactions)
-updateStatistics(transactions)
-
-}
-
-function setDefaultDate(){
-
-document.getElementById("date").value =
-new Date().toISOString().slice(0,10)
+    setDefaultDate()
+    renderTransactions(transactions)
+    updateStatistics(transactions)
 
 }
 
-function saveTransactions(){
 
-localStorage.setItem("transactions", JSON.stringify(transactions))
+// ===============================
+// УСТАНОВКА ТЕКУЩЕЙ ДАТЫ
+// ===============================
 
-}
+function setDefaultDate() {
 
-form.addEventListener("submit", function(e){
+    const dateInput = document.getElementById("date")
 
-e.preventDefault()
-
-const amount = parseFloat(document.getElementById("amount").value)
-const type = document.getElementById("type").value
-const category = document.getElementById("category").value
-const date = document.getElementById("date").value
-const comment = document.getElementById("comment").value
-
-if(isNaN(amount) || amount <= 0){
-alert("Введите корректную сумму")
-return
-}
-
-const transaction = {
-id: Date.now(),
-amount,
-type,
-category,
-date,
-comment
-}
-
-transactions.push(transaction)
-
-saveTransactions()
-
-renderTransactions(transactions)
-
-updateStatistics(transactions)
-
-form.reset()
-
-setDefaultDate()
-
-})
-
-function renderTransactions(list){
-
-table.innerHTML = ""
-
-list.sort((a,b)=> new Date(b.date)-new Date(a.date))
-
-list.forEach(t=>{
-
-const row = document.createElement("tr")
-
-row.innerHTML = `
-<td>${t.date}</td>
-<td>${t.type}</td>
-<td>${t.category}</td>
-<td class="${t.type}">${t.amount}</td>
-<td>${t.comment}</td>
-<td>
-<button class="delete" onclick="deleteTransaction(${t.id})">
-X
-</button>
-</td>
-`
-
-table.appendChild(row)
-
-})
+    if (dateInput) {
+        dateInput.value = new Date().toISOString().slice(0, 10)
+    }
 
 }
 
-function deleteTransaction(id){
 
-transactions = transactions.filter(t => t.id !== id)
+// ===============================
+// ДОБАВЛЕНИЕ ТРАНЗАКЦИИ
+// ===============================
 
-saveTransactions()
+form.addEventListener("submit", addTransaction)
 
-renderTransactions(transactions)
+function addTransaction(event) {
 
-updateStatistics(transactions)
+    event.preventDefault()
+
+    const amount = parseFloat(document.getElementById("amount").value)
+    const type = document.getElementById("type").value
+    const category = document.getElementById("category").value
+    const date = document.getElementById("date").value
+    const comment = document.getElementById("comment").value
+
+
+    if (!validateAmount(amount)) return
+
+
+    const newTransaction = {
+        id: Date.now(),
+        amount,
+        type,
+        category,
+        date,
+        comment
+    }
+
+    transactions.push(newTransaction)
+
+    saveTransactions()
+
+    renderTransactions(transactions)
+
+    updateStatistics(transactions)
+
+    form.reset()
+
+    setDefaultDate()
+}
+
+
+// ===============================
+// ВАЛИДАЦИЯ ВВОДА
+// ===============================
+
+function validateAmount(amount) {
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("Ошибка: сумма должна быть положительным числом")
+        return false
+    }
+
+    return true
+}
+
+
+// ===============================
+// ОТОБРАЖЕНИЕ ТРАНЗАКЦИЙ
+// ===============================
+
+function renderTransactions(list) {
+
+    table.innerHTML = ""
+
+    const sortedList = [...list].sort((a, b) => new Date(b.date) - new Date(a.date))
+
+    sortedList.forEach(transaction => {
+
+        const row = document.createElement("tr")
+
+        row.innerHTML = `
+        <td>${transaction.date}</td>
+        <td>${transaction.type}</td>
+        <td>${transaction.category}</td>
+        <td class="${transaction.type}">${transaction.amount}</td>
+        <td>${transaction.comment}</td>
+        <td>
+            <button class="delete" onclick="deleteTransaction(${transaction.id})">
+            X
+            </button>
+        </td>
+        `
+
+        table.appendChild(row)
+
+    })
 
 }
 
-function applyFilters(){
 
-const category = document.getElementById("filterCategory").value
-const from = document.getElementById("filterFrom").value
-const to = document.getElementById("filterTo").value
+// ===============================
+// УДАЛЕНИЕ ТРАНЗАКЦИИ
+// ===============================
 
-const filtered = transactions.filter(t=>{
+function deleteTransaction(id) {
 
-if(category !== "all" && t.category !== category)
-return false
+    transactions = transactions.filter(transaction => transaction.id !== id)
 
-if(from && new Date(t.date) < new Date(from))
-return false
+    saveTransactions()
 
-if(to && new Date(t.date) > new Date(to))
-return false
+    renderTransactions(transactions)
 
-return true
-
-})
-
-renderTransactions(filtered)
-
-updateStatistics(filtered)
+    updateStatistics(transactions)
 
 }
 
-function searchComment(){
 
-const text = document.getElementById("search").value.toLowerCase()
+// ===============================
+// ФИЛЬТРАЦИЯ
+// ===============================
 
-const filtered = transactions.filter(t =>
-t.comment.toLowerCase().includes(text)
-)
+function applyFilters() {
 
-renderTransactions(filtered)
+    const category = document.getElementById("filterCategory").value
+    const dateFrom = document.getElementById("filterFrom").value
+    const dateTo = document.getElementById("filterTo").value
 
-updateStatistics(filtered)
+    const filteredTransactions = transactions.filter(transaction => {
 
-}
+        if (category !== "all" && transaction.category !== category) return false
 
-function updateStatistics(list){
+        if (dateFrom && new Date(transaction.date) < new Date(dateFrom)) return false
 
-let income = 0
-let expense = 0
+        if (dateTo && new Date(transaction.date) > new Date(dateTo)) return false
 
-list.forEach(t=>{
+        return true
 
-if(t.type === "income") income += t.amount
-else expense += t.amount
+    })
 
-})
+    renderTransactions(filteredTransactions)
 
-incomeElement.textContent = income
-expenseElement.textContent = expense
-balanceElement.textContent = income - expense
-
-drawChart(list)
+    updateStatistics(filteredTransactions)
 
 }
 
-function drawChart(list){
 
-let categories = {}
+// ===============================
+// ПОИСК ПО КОММЕНТАРИЮ
+// ===============================
 
-list.forEach(t=>{
+function searchComment() {
 
-if(t.type === "expense"){
+    const searchText = document
+        .getElementById("search")
+        .value
+        .toLowerCase()
 
-if(!categories[t.category])
-categories[t.category] = 0
+    const filtered = transactions.filter(transaction =>
+        transaction.comment.toLowerCase().includes(searchText)
+    )
 
-categories[t.category] += t.amount
+    renderTransactions(filtered)
 
-}
-
-})
-
-const total = Object.values(categories).reduce((a,b)=>a+b,0)
-
-let text = ""
-
-for(let cat in categories){
-
-const percent = ((categories[cat]/total)*100).toFixed(1)
-
-const bar = "#".repeat(Math.round(percent/2))
-
-text += `${cat} ${percent}% ${bar}\n`
+    updateStatistics(filtered)
 
 }
 
-chartElement.textContent = text
+
+// ===============================
+// СТАТИСТИКА
+// ===============================
+
+function updateStatistics(list) {
+
+    let income = 0
+    let expense = 0
+
+    list.forEach(transaction => {
+
+        if (transaction.type === "income") {
+            income += transaction.amount
+        } else {
+            expense += transaction.amount
+        }
+
+    })
+
+    incomeElement.textContent = income
+    expenseElement.textContent = expense
+    balanceElement.textContent = income - expense
+
+    drawChart(list)
 
 }
 
-function exportCSV(){
 
-let csv = "Дата,Тип,Категория,Сумма,Комментарий\n"
+// ===============================
+// ТЕКСТОВЫЙ ГРАФИК
+// ===============================
 
-transactions.forEach(t=>{
+function drawChart(list) {
 
-csv += `${t.date},${t.type},${t.category},${t.amount},${t.comment}\n`
+    const categories = {}
 
-})
+    list.forEach(transaction => {
 
-const blob = new Blob([csv], {type:"text/csv"})
+        if (transaction.type === "expense") {
 
-const url = URL.createObjectURL(blob)
+            if (!categories[transaction.category]) {
+                categories[transaction.category] = 0
+            }
 
-const link = document.createElement("a")
+            categories[transaction.category] += transaction.amount
+        }
 
-link.href = url
-link.download = "finance.csv"
+    })
 
-link.click()
+    const total = Object.values(categories).reduce((a, b) => a + b, 0)
+
+    let chartText = ""
+
+    for (let category in categories) {
+
+        const percent = ((categories[category] / total) * 100).toFixed(1)
+
+        const bar = "#".repeat(Math.round(percent / 2))
+
+        chartText += `${category} ${percent}% ${bar}\n`
+
+    }
+
+    chartElement.textContent = chartText
+
+}
+
+
+// ===============================
+// ЭКСПОРТ CSV
+// ===============================
+
+function exportCSV() {
+
+    let csv = "Дата,Тип,Категория,Сумма,Комментарий\n"
+
+    transactions.forEach(transaction => {
+
+        csv += `${transaction.date},${transaction.type},${transaction.category},${transaction.amount},${transaction.comment}\n`
+
+    })
+
+    const blob = new Blob([csv], { type: "text/csv" })
+
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement("a")
+
+    link.href = url
+    link.download = "finance.csv"
+
+    link.click()
 
 }
