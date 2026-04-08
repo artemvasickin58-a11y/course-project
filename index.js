@@ -11,7 +11,6 @@ const ctx = document.getElementById("financeChart").getContext("2d");
 
 let financeChart;
 
-/* INIT */
 init();
 
 function init() {
@@ -85,11 +84,11 @@ function renderTransactions(list){
         const row = document.createElement("tr");
 
         row.innerHTML = `
-        <td>${t.date}</td>
-        <td>${t.type === "income" ? "Доход" : "Расход"}</td>
-        <td>${t.category}</td>
-        <td>${t.amount}</td>
-        <td>${t.comment}</td>
+        <td data-label="Дата">${t.date}</td>
+        <td data-label="Тип">${t.type === "income" ? "Доход" : "Расход"}</td>
+        <td data-label="Категория">${t.category}</td>
+        <td data-label="Сумма">${t.amount}</td>
+        <td data-label="Комментарий">${t.comment}</td>
         <td><button onclick="deleteTransaction(${t.id})">✕</button></td>
         `;
 
@@ -144,12 +143,10 @@ function resetFilters(){
 
 /* DELETE */
 function deleteTransaction(id){
-    if(confirm("Удалить?")){
-        transactions = transactions.filter(t => t.id !== id);
-        save();
-        renderTransactions(transactions);
-        updateStatistics(transactions);
-    }
+    transactions = transactions.filter(t => t.id !== id);
+    save();
+    renderTransactions(transactions);
+    updateStatistics(transactions);
 }
 
 /* STATS */
@@ -179,11 +176,15 @@ function drawChart(income, expense){
         data:{
             labels:["Доход","Расход"],
             datasets:[{ data:[income, expense] }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false
         }
     });
 }
 
-/* TEXT CHART */
+/* TEXT */
 function drawTextChart(income, expense){
 
     const total = income + expense;
@@ -202,7 +203,7 @@ function drawTextChart(income, expense){
 `;
 }
 
-/* CSV (🔥 текущий список) */
+/* CSV */
 function exportCSV(){
 
     let csv = "Дата,Тип,Категория,Сумма,Комментарий\n";

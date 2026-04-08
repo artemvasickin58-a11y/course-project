@@ -3,6 +3,8 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Финансовый трекер</title>
 
 <link rel="stylesheet" href="style.css">
@@ -62,7 +64,7 @@
 </div>
 </div>
 
-<!-- 🔥 ФИЛЬТРЫ -->
+<!-- ФИЛЬТРЫ -->
 <div class="controls">
 
 <select id="filterType">
@@ -91,7 +93,9 @@
 </div>
 
 <h2>Диаграмма</h2>
+<div class="chart-box">
 <canvas id="financeChart"></canvas>
+</div>
 
 <h2>Текстовый график</h2>
 <pre id="chart"></pre>
@@ -99,7 +103,7 @@
 <table>
 <thead>
 <tr>
-<th id="dateHeader" style="cursor:pointer;">Дата ⬇</th>
+<th id="dateHeader">Дата ⬇</th>
 <th>Тип</th>
 <th>Категория</th>
 <th>Сумма</th>

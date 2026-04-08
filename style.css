@@ -12,35 +12,42 @@ body.dark {
 }
 
 body {
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     margin: 0;
 }
 
+/* ===== КОНТЕЙНЕР ===== */
 .container {
     max-width: 1000px;
     margin: auto;
     padding: 20px;
 }
 
+/* ===== ВЕРХ ===== */
 .top-bar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
+/* ===== ФОРМА ===== */
 form {
     background: var(--card);
     padding: 20px;
     border-radius: 12px;
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
     gap: 10px;
     margin: 20px 0;
 }
 
+/* ===== ЭЛЕМЕНТЫ ===== */
 input, select, button {
     padding: 10px;
     border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 button {
@@ -49,9 +56,11 @@ button {
     cursor: pointer;
 }
 
+/* ===== СТАТИСТИКА ===== */
 .stats {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .card {
@@ -62,6 +71,7 @@ button {
     text-align: center;
 }
 
+/* ===== ФИЛЬТРЫ ===== */
 .controls {
     display: flex;
     flex-wrap: wrap;
@@ -69,10 +79,18 @@ button {
     margin: 20px 0;
 }
 
+/* ===== ГРАФИК ===== */
+.chart-box {
+    width: 220px;
+    height: 220px;
+    margin: 20px auto;
+}
+
+/* ===== ТАБЛИЦА ===== */
 table {
     width: 100%;
     background: var(--card);
-    margin-top: 20px;
+    border-collapse: collapse;
 }
 
 td, th {
@@ -81,21 +99,70 @@ td, th {
     border-bottom: 1px solid #ccc;
 }
 
-pre {
-    background: var(--card);
-    padding: 15px;
-    border-radius: 10px;
-}
-
+/* ===== ТЕЛЕФОН ===== */
 @media (max-width: 768px) {
+
+    .top-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+    }
+
     .stats {
         flex-direction: column;
     }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    /* таблица -> карточки */
+    table thead {
+        display: none;
+    }
+
+    tr {
+        display: block;
+        background: var(--card);
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        border: none;
+        padding: 6px 0;
+    }
+
+    td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: gray;
+    }
+
+    .chart-box {
+        width: 180px;
+        height: 180px;
+    }
 }
 
-#financeChart {
-    max-width: 250px;
-    max-height: 250px;
-    margin: 20px auto;
-    display: block;
+/* ===== МАЛЕНЬКИЕ ТЕЛЕФОНЫ ===== */
+@media (max-width: 480px) {
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    input, select, button {
+        font-size: 0.9rem;
+    }
 }
