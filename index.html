@@ -1,17 +1,74 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
 <meta charset="UTF-8">
 <title>Калькулятор личных финансов</title>
+
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script defer src="./index.js"></script>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>Калькулятор личных финансов</h1>
+<h1>Финансовый трекер</h1>
+
+<div class="form-card">
+
+<form id="transactionForm">
+
+<input type="number" id="amount" placeholder="Сумма" required>
+
+<select id="type">
+<option value="income">Доход</option>
+<option value="expense">Расход</option>
+</select>
+
+<select id="category">
+<option value="salary">Зарплата</option>
+<option value="food">Еда</option>
+<option value="transport">Транспорт</option>
+<option value="entertainment">Развлечения</option>
+</select>
+
+<input type="date" id="date">
+
+<input type="text" id="comment" placeholder="Комментарий">
+
+<button type="submit">Добавить</button>
+
+</form>
+
+</div>
+
+<div class="filters">
+
+<input type="date" id="filterFrom">
+<input type="date" id="filterTo">
+
+<select id="filterType">
+<option value="all">Все</option>
+<option value="income">Доходы</option>
+<option value="expense">Расходы</option>
+</select>
+
+<select id="filterCategory">
+<option value="all">Все категории</option>
+<option value="salary">Зарплата</option>
+<option value="food">Еда</option>
+<option value="transport">Транспорт</option>
+<option value="entertainment">Развлечения</option>
+</select>
+
+<button onclick="applyFilters()">Фильтр</button>
+<button onclick="resetFilters()">Сброс</button>
+<button onclick="exportCSV()">CSV</button>
+
+</div>
 
 <div class="stats">
 
@@ -32,75 +89,21 @@
 
 </div>
 
-<h2>Добавить транзакцию</h2>
+<div class="chart-block">
 
-<form id="transactionForm">
+<h2>Диаграмма доходов и расходов</h2>
 
-<input type="number" id="amount" placeholder="Сумма" required>
-
-<select id="type">
-<option value="income">Доход</option>
-<option value="expense">Расход</option>
-</select>
-
-<select id="category">
-<option>Еда</option>
-<option>Транспорт</option>
-<option>Жильё</option>
-<option>Развлечения</option>
-<option>Здоровье</option>
-<option>Другие</option>
-</select>
-
-<input type="date" id="date">
-
-<input type="text" id="comment" placeholder="Комментарий">
-
-<button type="submit">Добавить</button>
-
-</form>
-
-<h2>Фильтры</h2>
-
-<div class="filters">
-
-<select id="filterType">
-<option value="all">Все типы</option>
-<option value="income">Доходы</option>
-<option value="expense">Расходы</option>
-</select>
-
-<select id="filterCategory">
-<option value="all">Все категории</option>
-<option>Еда</option>
-<option>Транспорт</option>
-<option>Жильё</option>
-<option>Развлечения</option>
-<option>Здоровье</option>
-<option>Другие</option>
-</select>
-
-<input type="date" id="filterFrom">
-<input type="date" id="filterTo">
-
-<button onclick="applyFilters()">Применить</button>
-<button onclick="filterWeek()">Неделя</button>
-<button onclick="filterMonth()">Месяц</button>
-<button onclick="resetFilters()">Сброс</button>
-
-<input type="text" id="search" placeholder="Поиск комментария" oninput="searchComment()">
-
-<button onclick="exportCSV()">Экспорт CSV</button>
+<canvas id="financeChart"></canvas>
 
 </div>
 
-<h2>Транзакции</h2>
+<div class="table-card">
 
 <table>
 
 <thead>
 <tr>
-<th onclick="toggleSort('date')">Дата <span class="sort-icon">↕</span></th>
+<th>Дата</th>
 <th>Тип</th>
 <th>Категория</th>
 <th>Сумма</th>
@@ -113,13 +116,9 @@
 
 </table>
 
-<h2>Распределение расходов</h2>
-
-<pre id="chart"></pre>
-
 </div>
 
-<script src="script.js"></script>
+</div>
 
 </body>
 </html>

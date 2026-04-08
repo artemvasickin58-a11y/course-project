@@ -147,7 +147,7 @@ table {
 
 thead {
     background: #1e2937;
-    color: white;
+    color: rgb(181, 129, 129);
 }
 
 th {
@@ -261,4 +261,11 @@ pre#chart {
     tr:hover {
         background: #f8fafc;
     }
+}
+
+#financeChart {
+    max-width: 300px;
+    max-height: 300px;
+    margin: 20px auto;
+    display: block;
 }
