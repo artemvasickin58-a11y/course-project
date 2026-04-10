@@ -233,8 +233,8 @@ function drawTextChart(income, expense){
         return;
     }
 
-    const i = "🟩".repeat(Math.round(income/total*20));
-    const e = "🟥".repeat(Math.round(expense/total*20));
+    const i = "".repeat(Math.round(income/total*20));
+    const e = "".repeat(Math.round(expense/total*20));
 
     chart.textContent = `
 Доходы:  ${i} ${income}
