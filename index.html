@@ -8,7 +8,7 @@
 <title>Финансовый трекер</title>
 
 <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script defer src="./index.js"></script>
 
 </head>
@@ -17,14 +17,14 @@
 
 <div class="container">
 
-<div class="top-bar">
-<h1>Кальулятор для учёта личных финансов</h1>
-<button id="themeToggle">🌙</button>
-</div>
+<header class="top-bar">
+<h1>💰 Финансы</h1>
+<button id="themeToggle" class="theme-btn">🌙</button>
+</header>
 
-<form id="transactionForm">
+<form id="transactionForm" class="form">
 
-<input type="number" id="amount" placeholder="Сумма" min="1" step="1" required>
+<input type="number" id="amount" placeholder="Сумма" min="0.01" step="0.01" required>
 
 <select id="type" required>
 <option value="">Тип</option>
@@ -49,23 +49,26 @@
 
 </form>
 
-<div class="stats">
-<div class="card income">
+<section class="stats">
+
+<div class="card">
 <h3>Доходы</h3>
 <p id="income">0</p>
 </div>
 
-<div class="card expense">
+<div class="card">
 <h3>Расходы</h3>
 <p id="expense">0</p>
 </div>
-<div class="card balance">
+
+<div class="card">
 <h3>Баланс</h3>
 <p id="balance">0</p>
 </div>
-</div>
 
-<div class="controls">
+</section>
+
+<section class="controls">
 
 <select id="filterType">
 <option value="all">Все</option>
@@ -90,17 +93,22 @@
 <button onclick="resetFilters()">Сброс</button>
 <button onclick="exportCSV()">CSV</button>
 
-</div>
+</section>
 
+<section class="chart-section">
 <h2>Диаграмма</h2>
+
 <div class="chart-box">
 <canvas id="financeChart"></canvas>
 </div>
 
-<h2>Текстовый график</h2>
 <pre id="chart"></pre>
+</section>
 
-<table>
+<section class="table-section">
+
+<table class="responsive-table">
+
 <thead>
 <tr>
 <th id="dateHeader">Дата ⬇</th>
@@ -111,8 +119,12 @@
 <th></th>
 </tr>
 </thead>
+
 <tbody id="transactionTable"></tbody>
+
 </table>
+
+</section>
 
 </div>
 
