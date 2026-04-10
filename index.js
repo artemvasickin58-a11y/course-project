@@ -6,6 +6,7 @@ const tableBody = document.getElementById("transactionTable");
 const incomeElement = document.getElementById("income");
 const expenseElement = document.getElementById("expense");
 const balanceElement = document.getElementById("balance");
+const themeBtn = document.getElementById("themeToggle");
 
 const ctx = document.getElementById("financeChart").getContext("2d");
 
@@ -22,33 +23,61 @@ function init() {
 
 /* DATE */
 function setDefaultDate() {
-    document.getElementById("date").value = new Date().toISOString().slice(0,10);
+    date.value = new Date().toISOString().slice(0,10);
 }
 
 /* THEME */
-document.getElementById("themeToggle").onclick = () => {
+themeBtn.onclick = () => {
+
     document.body.classList.toggle("dark");
-    localStorage.setItem("theme", document.body.classList.contains("dark"));
+
+    const isDark = document.body.classList.contains("dark");
+
+    localStorage.setItem("theme", isDark);
+
+    themeBtn.textContent = isDark ? "☀️" : "🌙";
 };
 
 function loadTheme(){
-    if(localStorage.getItem("theme") === "true"){
+    const isDark = localStorage.getItem("theme") === "true";
+
+    if(isDark){
         document.body.classList.add("dark");
     }
+
+    themeBtn.textContent = isDark ? "☀️" : "🌙";
 }
 
-/* ADD */
+/* ADD + VALIDATION */
 document.getElementById("transactionForm").addEventListener("submit", e => {
 
     e.preventDefault();
 
+    const amountValue = amount.value.trim();
+    const typeValue = type.value;
+    const categoryValue = category.value;
+    const dateValue = date.value;
+    const commentValue = comment.value.trim();
+
+    if (!amountValue || !typeValue || !categoryValue || !dateValue) {
+        alert("Заполните все обязательные поля");
+        return;
+    }
+
+    const amountNumber = parseFloat(amountValue);
+
+    if (isNaN(amountNumber) || amountNumber <= 0) {
+        alert("Введите корректную сумму");
+        return;
+    }
+
     const t = {
         id: Date.now(),
-        amount: +amount.value,
-        type: type.value,
-        category: category.value,
-        date: date.value,
-        comment: comment.value || "—"
+        amount: amountNumber,
+        type: typeValue,
+        category: categoryValue,
+        date: dateValue,
+        comment: commentValue || "—"
     };
 
     transactions.push(t);
@@ -97,30 +126,21 @@ function renderTransactions(list){
 }
 
 /* SORT */
-document.getElementById("dateHeader").onclick = () => {
-
+dateHeader.onclick = () => {
     sortDirection = sortDirection === "asc" ? "desc" : "asc";
-
-    document.getElementById("dateHeader").textContent =
-        sortDirection === "asc" ? "Дата ⬆" : "Дата ⬇";
-
+    dateHeader.textContent = sortDirection === "asc" ? "Дата ⬆" : "Дата ⬇";
     renderTransactions(currentList);
 };
 
 /* FILTER */
 function applyFilters(){
 
-    const type = filterType.value;
-    const category = filterCategory.value;
-    const from = filterFrom.value;
-    const to = filterTo.value;
-
     let filtered = transactions.filter(t => {
 
-        if(type !== "all" && t.type !== type) return false;
-        if(category !== "all" && t.category !== category) return false;
-        if(from && t.date < from) return false;
-        if(to && t.date > to) return false;
+        if(filterType.value !== "all" && t.type !== filterType.value) return false;
+        if(filterCategory.value !== "all" && t.category !== filterCategory.value) return false;
+        if(filterFrom.value && t.date < filterFrom.value) return false;
+        if(filterTo.value && t.date > filterTo.value) return false;
 
         return true;
     });
@@ -194,8 +214,8 @@ function drawTextChart(income, expense){
         return;
     }
 
-    const i = "".repeat(Math.round(income/total*20));
-    const e = "".repeat(Math.round(expense/total*20));
+    const i = "🟩".repeat(Math.round(income/total*20));
+    const e = "🟥".repeat(Math.round(expense/total*20));
 
     chart.textContent = `
 Доходы:  ${i} ${income}
