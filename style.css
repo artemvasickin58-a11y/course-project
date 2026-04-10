@@ -1,3 +1,16 @@
+/* ===== БАЗА ===== */
+* {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: system-ui, Arial;
+}
+
 /* ===== ПЕРЕМЕННЫЕ ===== */
 :root {
     --bg: #f4f6f9;
@@ -12,18 +25,12 @@ body.dark {
     --text: #e2e8f0;
 }
 
-/* ===== БАЗА ===== */
-body {
-    margin: 0;
-    font-family: system-ui, Arial;
-    background: var(--bg);
-    color: var(--text);
-}
-
+/* ===== КОНТЕЙНЕР ===== */
 .container {
+    width: 100%;
     max-width: 1200px;
     margin: auto;
-    padding: 12px;
+    padding: 10px;
 }
 
 /* ===== HEADER ===== */
@@ -43,12 +50,13 @@ body {
     display: grid;
     gap: 10px;
     background: var(--card);
-    padding: 15px;
+    padding: 12px;
     border-radius: 12px;
     margin: 15px 0;
 }
 
 input, select, button {
+    width: 100%;
     padding: 12px;
     font-size: 16px;
     border-radius: 10px;
@@ -69,9 +77,13 @@ button {
 
 .card {
     background: var(--card);
-    padding: 15px;
+    padding: 12px;
     border-radius: 12px;
     text-align: center;
+}
+
+.card p {
+    font-size: 1.5rem;
 }
 
 /* ===== ФИЛЬТРЫ ===== */
@@ -82,10 +94,6 @@ button {
 }
 
 /* ===== ГРАФИК ===== */
-.chart-section {
-    text-align: center;
-}
-
 .chart-box {
     width: 100%;
     max-width: 220px;
@@ -97,9 +105,15 @@ pre {
     background: var(--card);
     padding: 10px;
     border-radius: 10px;
+    overflow-x: auto;
 }
 
 /* ===== ТАБЛИЦА (МОБИЛКА) ===== */
+.responsive-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
 .responsive-table thead {
     display: none;
 }
@@ -107,8 +121,8 @@ pre {
 .responsive-table tr {
     display: block;
     background: var(--card);
-    margin-bottom: 12px;
-    padding: 12px;
+    margin-bottom: 10px;
+    padding: 10px;
     border-radius: 12px;
 }
 
@@ -116,6 +130,7 @@ pre {
     display: flex;
     justify-content: space-between;
     padding: 6px 0;
+    word-break: break-word;
 }
 
 .responsive-table td::before {
@@ -124,11 +139,17 @@ pre {
     color: gray;
 }
 
+/* кнопка удалить */
+.responsive-table button {
+    width: auto;
+    padding: 6px 10px;
+}
+
 /* ===== ПЛАНШЕТ ===== */
 @media (min-width: 600px) {
 
     .form {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 
     .stats {
@@ -146,6 +167,10 @@ pre {
 
 /* ===== ПК ===== */
 @media (min-width: 900px) {
+
+    .container {
+        padding: 20px;
+    }
 
     .stats {
         grid-template-columns: repeat(3, 1fr);
@@ -182,168 +207,7 @@ pre {
 /* ===== БОЛЬШИЕ ЭКРАНЫ ===== */
 @media (min-width: 1200px) {
 
-    .container {
-        max-width: 1200px;
-    }
-
     .chart-box {
         max-width: 350px;
-    }
-}
-
-/* ================== ТЕЛЕФОНЫ (до 768px) ================== */
-@media (max-width: 768px) {
-
-    body {
-        font-size: 15px;
-    }
-
-    .container {
-        padding: 10px;
-    }
-
-    /* HEADER */
-    .top-bar {
-        flex-direction: row;
-        gap: 10px;
-    }
-
-    h1 {
-        font-size: 1.3rem;
-    }
-
-    .theme-btn {
-        font-size: 18px;
-        padding: 8px 12px;
-    }
-
-    /* ФОРМА */
-    .form {
-        gap: 8px;
-        padding: 12px;
-    }
-
-    input, select {
-        font-size: 16px; /* важно для iOS */
-        padding: 12px;
-    }
-
-    button {
-        width: 100%;
-        min-height: 48px;
-        font-size: 16px;
-        border-radius: 12px;
-    }
-
-    /* СТАТИСТИКА */
-    .card {
-        padding: 12px;
-    }
-
-    .card h3 {
-        font-size: 0.9rem;
-    }
-
-    .card p {
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-
-    /* ФИЛЬТРЫ */
-    .controls {
-        gap: 8px;
-    }
-
-    .controls button {
-        width: 100%;
-    }
-
-    /* ГРАФИК */
-    .chart-box {
-        max-width: 180px;
-    }
-
-    pre {
-        font-size: 13px;
-    }
-
-    /* КАРТОЧКИ ТРАНЗАКЦИЙ */
-    .responsive-table tr {
-        padding: 12px;
-        border-radius: 14px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    }
-
-    .responsive-table td {
-        font-size: 14px;
-    }
-
-    .responsive-table td::before {
-        font-size: 13px;
-    }
-
-    /* кнопка удалить */
-    .responsive-table button {
-        width: auto;
-        min-height: auto;
-        padding: 6px 10px;
-        font-size: 14px;
-    }
-}
-
-/* ================== МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 480px) ================== */
-@media (max-width: 480px) {
-
-    h1 {
-        font-size: 1.1rem;
-    }
-
-    .theme-btn {
-        padding: 6px 10px;
-    }
-
-    .form {
-        padding: 10px;
-    }
-
-    input, select, button {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .card p {
-        font-size: 1.3rem;
-    }
-
-    .chart-box {
-        max-width: 150px;
-    }
-
-    pre {
-        font-size: 12px;
-    }
-}
-
-/* ================== ОЧЕНЬ МАЛЕНЬКИЕ (до 360px) ================== */
-@media (max-width: 360px) {
-
-    body {
-        font-size: 14px;
-    }
-
-    h1 {
-        font-size: 1rem;
-    }
-
-    input, select {
-        font-size: 13px;
-    }
-
-    .card p {
-        font-size: 1.2rem;
-    }
-
-    .chart-box {
-        max-width: 130px;
     }
 }
