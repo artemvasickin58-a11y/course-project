@@ -1,7 +1,9 @@
+/* ===== ДАННЫЕ ===== */
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 let currentList = [...transactions];
 let sortDirection = "desc";
 
+/* ===== ЭЛЕМЕНТЫ ===== */
 const tableBody = document.getElementById("transactionTable");
 const incomeElement = document.getElementById("income");
 const expenseElement = document.getElementById("expense");
@@ -12,72 +14,76 @@ const ctx = document.getElementById("financeChart").getContext("2d");
 
 let financeChart;
 
+/* ===== INIT ===== */
 init();
 
 function init() {
     setDefaultDate();
-    loadTheme();
+    initTheme();
     renderTransactions(transactions);
     updateStatistics(transactions);
 }
 
-/* DATE */
+/* ===== ДАТА ===== */
 function setDefaultDate() {
-    date.value = new Date().toISOString().slice(0,10);
+    const dateInput = document.getElementById("date");
+    dateInput.value = new Date().toISOString().slice(0,10);
 }
 
-/* THEME */
-themeBtn.onclick = () => {
+/* ===== ТЕМА (🔥 исправленная) ===== */
+function initTheme(){
 
-    document.body.classList.toggle("dark");
+    const saved = localStorage.getItem("theme");
 
-    const isDark = document.body.classList.contains("dark");
-
-    localStorage.setItem("theme", isDark);
-
-    themeBtn.textContent = isDark ? "☀️" : "🌙";
-};
-
-function loadTheme(){
-    const isDark = localStorage.getItem("theme") === "true";
-
-    if(isDark){
+    if(saved === "dark"){
         document.body.classList.add("dark");
+        themeBtn.textContent = "☀️";
+    } else {
+        themeBtn.textContent = "🌙";
     }
 
-    themeBtn.textContent = isDark ? "☀️" : "🌙";
+    themeBtn.addEventListener("click", () => {
+
+        document.body.classList.toggle("dark");
+
+        const isDark = document.body.classList.contains("dark");
+
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+
+        themeBtn.textContent = isDark ? "☀️" : "🌙";
+    });
 }
 
-/* ADD + VALIDATION */
+/* ===== ДОБАВЛЕНИЕ ===== */
 document.getElementById("transactionForm").addEventListener("submit", e => {
 
     e.preventDefault();
 
-    const amountValue = amount.value.trim();
-    const typeValue = type.value;
-    const categoryValue = category.value;
-    const dateValue = date.value;
-    const commentValue = comment.value.trim();
+    const amount = document.getElementById("amount").value.trim();
+    const type = document.getElementById("type").value;
+    const category = document.getElementById("category").value;
+    const date = document.getElementById("date").value;
+    const comment = document.getElementById("comment").value.trim();
 
-    if (!amountValue || !typeValue || !categoryValue || !dateValue) {
-        alert("Заполните все обязательные поля");
+    if (!amount || !type || !category || !date) {
+        alert("Заполните все поля");
         return;
     }
 
-    const amountNumber = parseFloat(amountValue);
+    const amountNum = parseFloat(amount);
 
-    if (isNaN(amountNumber) || amountNumber <= 0) {
+    if (isNaN(amountNum) || amountNum <= 0) {
         alert("Введите корректную сумму");
         return;
     }
 
     const t = {
         id: Date.now(),
-        amount: amountNumber,
-        type: typeValue,
-        category: categoryValue,
-        date: dateValue,
-        comment: commentValue || "—"
+        amount: amountNum,
+        type,
+        category,
+        date,
+        comment: comment || "—"
     };
 
     transactions.push(t);
@@ -90,25 +96,25 @@ document.getElementById("transactionForm").addEventListener("submit", e => {
     setDefaultDate();
 });
 
-/* SAVE */
+/* ===== СОХРАНЕНИЕ ===== */
 function save(){
     localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
-/* RENDER */
+/* ===== ОТРИСОВКА ===== */
 function renderTransactions(list){
 
-    currentList = list;
+    currentList = [...list];
 
     tableBody.innerHTML = "";
 
-    list.sort((a,b)=>
+    currentList.sort((a,b)=>
         sortDirection === "asc"
         ? new Date(a.date) - new Date(b.date)
         : new Date(b.date) - new Date(a.date)
     );
 
-    list.forEach(t => {
+    currentList.forEach(t => {
 
         const row = document.createElement("tr");
 
@@ -125,22 +131,31 @@ function renderTransactions(list){
     });
 }
 
-/* SORT */
-dateHeader.onclick = () => {
-    sortDirection = sortDirection === "asc" ? "desc" : "asc";
-    dateHeader.textContent = sortDirection === "asc" ? "Дата ⬆" : "Дата ⬇";
-    renderTransactions(currentList);
-};
+/* ===== СОРТИРОВКА ===== */
+document.getElementById("dateHeader").addEventListener("click", () => {
 
-/* FILTER */
+    sortDirection = sortDirection === "asc" ? "desc" : "asc";
+
+    document.getElementById("dateHeader").textContent =
+        sortDirection === "asc" ? "Дата ⬆" : "Дата ⬇";
+
+    renderTransactions(currentList);
+});
+
+/* ===== ФИЛЬТРЫ ===== */
 function applyFilters(){
+
+    const type = document.getElementById("filterType").value;
+    const category = document.getElementById("filterCategory").value;
+    const from = document.getElementById("filterFrom").value;
+    const to = document.getElementById("filterTo").value;
 
     let filtered = transactions.filter(t => {
 
-        if(filterType.value !== "all" && t.type !== filterType.value) return false;
-        if(filterCategory.value !== "all" && t.category !== filterCategory.value) return false;
-        if(filterFrom.value && t.date < filterFrom.value) return false;
-        if(filterTo.value && t.date > filterTo.value) return false;
+        if(type !== "all" && t.type !== type) return false;
+        if(category !== "all" && t.category !== category) return false;
+        if(from && t.date < from) return false;
+        if(to && t.date > to) return false;
 
         return true;
     });
@@ -149,19 +164,19 @@ function applyFilters(){
     updateStatistics(filtered);
 }
 
-/* RESET */
+/* ===== СБРОС ===== */
 function resetFilters(){
 
-    filterType.value = "all";
-    filterCategory.value = "all";
-    filterFrom.value = "";
-    filterTo.value = "";
+    document.getElementById("filterType").value = "all";
+    document.getElementById("filterCategory").value = "all";
+    document.getElementById("filterFrom").value = "";
+    document.getElementById("filterTo").value = "";
 
     renderTransactions(transactions);
     updateStatistics(transactions);
 }
 
-/* DELETE */
+/* ===== УДАЛЕНИЕ ===== */
 function deleteTransaction(id){
     transactions = transactions.filter(t => t.id !== id);
     save();
@@ -169,7 +184,7 @@ function deleteTransaction(id){
     updateStatistics(transactions);
 }
 
-/* STATS */
+/* ===== СТАТИСТИКА ===== */
 function updateStatistics(list){
 
     let income = 0, expense = 0;
@@ -186,7 +201,7 @@ function updateStatistics(list){
     drawTextChart(income, expense);
 }
 
-/* CHART */
+/* ===== ГРАФИК ===== */
 function drawChart(income, expense){
 
     if(financeChart) financeChart.destroy();
@@ -195,7 +210,9 @@ function drawChart(income, expense){
         type:"doughnut",
         data:{
             labels:["Доход","Расход"],
-            datasets:[{ data:[income, expense] }]
+            datasets:[{
+                data:[income, expense]
+            }]
         },
         options:{
             responsive:true,
@@ -204,10 +221,12 @@ function drawChart(income, expense){
     });
 }
 
-/* TEXT */
+/* ===== ТЕКСТ ГРАФИК ===== */
 function drawTextChart(income, expense){
 
     const total = income + expense;
+
+    const chart = document.getElementById("chart");
 
     if(total === 0){
         chart.textContent = "Нет данных";
@@ -223,7 +242,7 @@ function drawTextChart(income, expense){
 `;
 }
 
-/* CSV */
+/* ===== CSV ===== */
 function exportCSV(){
 
     let csv = "Дата,Тип,Категория,Сумма,Комментарий\n";
