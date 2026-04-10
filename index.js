@@ -1,13 +1,10 @@
-/* =============================================
-   ФИНАНСОВЫЙ ТРЕКЕР — Полностью переработанный JS
-   ============================================= */
+// ==================== Финансовый трекер ====================
 
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 let currentList = [...transactions];
-let sortDirection = "desc"; // desc = новые сверху
+let sortDirection = "desc";
 
-// Элементы DOM
-const elements = {
+const els = {
     form: document.getElementById("transactionForm"),
     tableBody: document.getElementById("transactionTable"),
     incomeEl: document.getElementById("income"),
@@ -21,7 +18,7 @@ const elements = {
 
 let financeChart = null;
 
-// ====================== INIT ======================
+// ====================== ИНИЦИАЛИЗАЦИЯ ======================
 function init() {
     setDefaultDate();
     initTheme();
@@ -31,116 +28,93 @@ function init() {
 
 // ====================== ДАТА ======================
 function setDefaultDate() {
-    const dateInput = document.getElementById("date");
-    dateInput.value = new Date().toISOString().slice(0, 10);
+    document.getElementById("date").value = new Date().toISOString().slice(0, 10);
 }
 
 // ====================== ТЕМА ======================
 function initTheme() {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    
-    if (savedTheme === "dark") {
-        document.body.classList.add("dark");
-        elements.themeBtn.textContent = "☀️";
-    } else {
-        elements.themeBtn.textContent = "🌙";
-    }
+    const isDark = localStorage.getItem("theme") === "dark";
+    if (isDark) document.body.classList.add("dark");
+    els.themeBtn.textContent = isDark ? "☀️" : "🌙";
 
-    elements.themeBtn.addEventListener("click", () => {
+    els.themeBtn.addEventListener("click", () => {
         document.body.classList.toggle("dark");
-        const isDark = document.body.classList.contains("dark");
-
-        localStorage.setItem("theme", isDark ? "dark" : "light");
-        elements.themeBtn.textContent = isDark ? "☀️" : "🌙";
-
-        // Перерисовываем график при смене темы
-        const income = parseFloat(elements.incomeEl.textContent) || 0;
-        const expense = parseFloat(elements.expenseEl.textContent) || 0;
+        const nowDark = document.body.classList.contains("dark");
+        localStorage.setItem("theme", nowDark ? "dark" : "light");
+        els.themeBtn.textContent = nowDark ? "☀️" : "🌙";
+        
+        const income = parseFloat(els.incomeEl.textContent.replace(/\s/g, '')) || 0;
+        const expense = parseFloat(els.expenseEl.textContent.replace(/\s/g, '')) || 0;
         drawChart(income, expense);
     });
 }
 
-// ====================== ДОБАВЛЕНИЕ ТРАНЗАКЦИИ ======================
-elements.form.addEventListener("submit", (e) => {
+// ====================== ДОБАВЛЕНИЕ ======================
+els.form.addEventListener("submit", e => {
     e.preventDefault();
 
-    const amount = parseFloat(document.getElementById("amount").value.trim());
+    const amount = parseFloat(document.getElementById("amount").value);
     const type = document.getElementById("type").value;
     const category = document.getElementById("category").value;
     const date = document.getElementById("date").value;
     const comment = document.getElementById("comment").value.trim();
 
-    // Валидация
     if (!amount || !type || !category || !date) {
-        alert("Пожалуйста, заполните все обязательные поля");
+        alert("Заполните все обязательные поля");
         return;
     }
-    if (isNaN(amount) || amount <= 0) {
-        alert("Сумма должна быть больше нуля");
+    if (amount <= 0) {
+        alert("Сумма должна быть больше 0");
         return;
     }
 
-    const transaction = {
+    transactions.push({
         id: Date.now(),
         amount,
         type,
         category,
         date,
         comment: comment || "—"
-    };
+    });
 
-    transactions.push(transaction);
     saveToStorage();
-
-    // Обновляем интерфейс
     renderTransactions(transactions);
     updateStatistics(transactions);
 
-    // Сброс формы
-    elements.form.reset();
+    els.form.reset();
     setDefaultDate();
 });
 
-// ====================== СОХРАНЕНИЕ ======================
 function saveToStorage() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
-// ====================== ОТРИСОВКА ТАБЛИЦЫ ======================
+// ====================== ТАБЛИЦА ======================
 function renderTransactions(list) {
     currentList = [...list];
-    
-    // Сортировка по дате
-    currentList.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return sortDirection === "desc" ? dateB - dateA : dateA - dateB;
-    });
+    currentList.sort((a, b) => sortDirection === "desc" 
+        ? new Date(b.date) - new Date(a.date) 
+        : new Date(a.date) - new Date(b.date));
 
-    elements.tableBody.innerHTML = "";
+    els.tableBody.innerHTML = "";
 
     currentList.forEach(t => {
         const row = document.createElement("tr");
-        
         row.innerHTML = `
             <td data-label="Дата">${t.date}</td>
             <td data-label="Тип">${t.type === "income" ? "Доход" : "Расход"}</td>
             <td data-label="Категория">${t.category}</td>
             <td data-label="Сумма" class="${t.type}">${t.amount.toLocaleString('ru-RU')}</td>
             <td data-label="Комментарий">${t.comment}</td>
-            <td>
-                <button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button>
-            </td>
+            <td><button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button></td>
         `;
-
-        elements.tableBody.appendChild(row);
+        els.tableBody.appendChild(row);
     });
 }
 
-// ====================== СОРТИРОВКА ======================
-elements.dateHeader.addEventListener("click", () => {
+els.dateHeader.addEventListener("click", () => {
     sortDirection = sortDirection === "desc" ? "asc" : "desc";
-    elements.dateHeader.textContent = sortDirection === "desc" ? "Дата ⬇" : "Дата ⬆";
+    els.dateHeader.textContent = sortDirection === "desc" ? "Дата ⬇" : "Дата ⬆";
     renderTransactions(currentList);
 });
 
@@ -168,15 +142,12 @@ window.resetFilters = function() {
     document.getElementById("filterCategory").value = "all";
     document.getElementById("filterFrom").value = "";
     document.getElementById("filterTo").value = "";
-
     renderTransactions(transactions);
     updateStatistics(transactions);
 };
 
-// ====================== УДАЛЕНИЕ ======================
 window.deleteTransaction = function(id) {
     if (!confirm("Удалить эту транзакцию?")) return;
-
     transactions = transactions.filter(t => t.id !== id);
     saveToStorage();
     renderTransactions(transactions);
@@ -185,29 +156,33 @@ window.deleteTransaction = function(id) {
 
 // ====================== СТАТИСТИКА ======================
 function updateStatistics(list) {
-    let income = 0;
-    let expense = 0;
+    let income = 0, expense = 0;
+    list.forEach(t => t.type === "income" ? income += t.amount : expense += t.amount);
+    const balance = income - expense;
 
-    list.forEach(t => {
-        if (t.type === "income") income += t.amount;
-        else expense += t.amount;
-    });
+    // Доходы
+    els.incomeEl.textContent = income.toLocaleString('ru-RU');
 
-    elements.incomeEl.textContent = income.toLocaleString('ru-RU');
-    elements.expenseEl.textContent = expense.toLocaleString('ru-RU');
-    elements.balanceEl.textContent = (income - expense).toLocaleString('ru-RU');
+    // Расходы
+    els.expenseEl.textContent = expense.toLocaleString('ru-RU');
+
+    // Баланс
+    els.balanceEl.textContent = balance.toLocaleString('ru-RU');
+    const balanceCard = els.balanceEl.parentElement;
+    balanceCard.classList.toggle('positive', balance >= 0);
+    balanceCard.classList.toggle('negative', balance < 0);
 
     drawChart(income, expense);
     drawTextChart(income, expense);
 }
 
-// ====================== ГРАФИК (DOUGHNUT) ======================
+// ====================== ГРАФИК ======================
 function drawChart(income, expense) {
     if (financeChart) financeChart.destroy();
 
     const isDark = document.body.classList.contains("dark");
 
-    financeChart = new Chart(elements.chartCanvas.getContext("2d"), {
+    financeChart = new Chart(els.chartCanvas, {
         type: "doughnut",
         data: {
             labels: ["Доходы", "Расходы"],
@@ -215,72 +190,52 @@ function drawChart(income, expense) {
                 data: [income, expense],
                 backgroundColor: ["#22c55e", "#ef4444"],
                 borderColor: isDark ? "#1e293b" : "#ffffff",
-                borderWidth: 4,
-                hoverOffset: 12
+                borderWidth: 5
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
-            cutout: "65%",
+            cutout: "68%",
             plugins: {
                 legend: {
                     position: "bottom",
-                    labels: {
-                        color: isDark ? "#e2e8f0" : "#1e2937",
-                        font: { size: 15 },
-                        padding: 20,
-                        usePointStyle: true
-                    }
+                    labels: { color: isDark ? "#e2e8f0" : "#1e2937", font: { size: 15 }, padding: 25 }
                 }
             }
         }
     });
 }
 
-// ====================== ТЕКСТОВЫЙ ГРАФИК ======================
 function drawTextChart(income, expense) {
     const total = income + expense;
     if (total === 0) {
-        elements.textChart.textContent = "Нет данных для отображения";
+        els.textChart.textContent = "Нет данных";
         return;
     }
+    const iBar = "█".repeat(Math.round(income / total * 28));
+    const eBar = "█".repeat(Math.round(expense / total * 28));
 
-    const incomePercent = Math.round((income / total) * 100);
-    const expensePercent = Math.round((expense / total) * 100);
-
-    const incomeBar = "█".repeat(Math.round(income / total * 25));
-    const expenseBar = "█".repeat(Math.round(expense / total * 25));
-
-    elements.textChart.innerHTML = `
-Доходы:     ${incomeBar} ${income.toLocaleString('ru-RU')} ₽ (${incomePercent}%)
-Расходы:    ${expenseBar} ${expense.toLocaleString('ru-RU')} ₽ (${expensePercent}%)
+    els.textChart.innerHTML = `
+Доходы:  ${iBar} ${income.toLocaleString('ru-RU')} ₽
+Расходы: ${eBar} ${expense.toLocaleString('ru-RU')} ₽
     `.trim();
 }
 
-// ====================== ЭКСПОРТ В CSV ======================
+// ====================== CSV ======================
 window.exportCSV = function() {
-    if (currentList.length === 0) {
-        alert("Нет данных для экспорта");
-        return;
-    }
+    if (currentList.length === 0) return alert("Нет данных для экспорта");
 
     let csv = "Дата,Тип,Категория,Сумма,Комментарий\n";
-
     currentList.forEach(t => {
-        const comment = `"${t.comment.replace(/"/g, '""')}"`; // экранирование кавычек
-        csv += `${t.date},${t.type},${t.category},${t.amount},${comment}\n`;
+        csv += `${t.date},${t.type},${t.category},${t.amount},"${t.comment.replace(/"/g, '""')}"\n`;
     });
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-
-    link.href = url;
-    link.download = `transactions_${new Date().toISOString().slice(0,10)}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.download = `финансы_${new Date().toISOString().slice(0,10)}.csv`;
     link.click();
-    URL.revokeObjectURL(url);
 };
 
-// ====================== ЗАПУСК ======================
+// Запуск
 init();
