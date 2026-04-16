@@ -1,9 +1,9 @@
-export function filterTransactions(transactions, filters) {
+export function filterTransactions(transactions, filterOptions) {
     return transactions.filter(t => {
-        if (filters.type !== "all" && t.type !== filters.type) return false;
-        if (filters.category !== "all" && t.category !== filters.category) return false;
-        if (filters.from && t.date < filters.from) return false;
-        if (filters.to && t.date > filters.to) return false;
+        if (filterOptions.type !== "all" && t.type !== filterOptions.type) return false;
+        if (filterOptions.category !== "all" && t.category !== filterOptions.category) return false;
+        if (filterOptions.from && t.date < filterOptions.from) return false;
+        if (filterOptions.to && t.date > filterOptions.to) return false;
         return true;
     });
 }

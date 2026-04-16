@@ -1,15 +1,25 @@
-import { saveTransactions, getTransactions } from "./storage.js";
+import { addTransaction as storageAdd, deleteTransaction as storageDelete, getTransactions } from './storage.js';
 
-export function addTransaction(t) {
-    const transactions = getTransactions();
-    transactions.push(t);
-    saveTransactions(transactions);
-    return transactions;
+export function createTransaction(formData) {
+    return {
+        id: Date.now(),
+        amount: parseFloat(formData.amount),
+        type: formData.type,
+        category: formData.category,
+        date: formData.date,
+        comment: formData.comment || "—"
+    };
+}
+
+export function addNewTransaction(formData) {
+    const transaction = createTransaction(formData);
+    return storageAdd(transaction);
 }
 
 export function deleteTransactionById(id) {
-    let transactions = getTransactions();
-    transactions = transactions.filter(t => t.id !== id);
-    saveTransactions(transactions);
-    return transactions;
+    return storageDelete(id);
+}
+
+export function getAllTransactions() {
+    return getTransactions();
 }
