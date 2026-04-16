@@ -237,5 +237,5 @@ window.exportCSV = function() {
     link.click();
 };
 
-// Запуск
+// Запуск 
 init();
