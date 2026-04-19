@@ -1,7 +1,7 @@
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 
 export function getTransactions() {
-    return [...transactions]; // возвращаем копию
+    return [...transactions];
 }
 
 export function saveTransactions(newTransactions) {
