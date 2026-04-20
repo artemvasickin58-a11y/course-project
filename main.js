@@ -104,10 +104,7 @@ function setupEventListeners() {
 
     // Сортировка по дате
     document.getElementById("dateHeader").addEventListener("click", () => {
-        // меняем направление (нужно сделать глобально или через замыкание)
-        // для простоты оставим sortDirection в ui.js и перерендерим
-        // (можно улучшить позже)
-        window.location.reload(); // временно, или сделай лучше
+        window.location.reload(); 
     });
 }
 
